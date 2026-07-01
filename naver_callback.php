@@ -21,7 +21,7 @@ try {
         throw new RuntimeException('네이버 callback code가 없습니다.');
     }
 
-    if (!naver_validate_state(is_string($state) ? $state : null)) {
+    if (!naver_validate_state(is_string($state) ? $state : null, $conn, $DEMO_MODE)) {
         throw new RuntimeException('네이버 로그인 state 검증에 실패했습니다.');
     }
 
