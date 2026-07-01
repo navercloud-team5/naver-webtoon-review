@@ -29,13 +29,46 @@ function naver_authorization_url($config, $state) {
     return NAVER_AUTHORIZE_URL . '?' . $query;
 }
 
-function naver_validate_state($receivedState) {
+function naver_store_state($conn, $state) {
+    // 오래된 state 정리 (10분 초과분 삭제) - 매 로그인 시도마다 가볍게 청소
+    $conn->query("DELETE FROM oauth_states WHERE created_at < NOW() - INTERVAL 10 MINUTE");
+
+    $stmt = $conn->prepare("INSERT INTO oauth_states (state) VALUES (?)");
+    $stmt->bind_param('s', $state);
+    $stmt->execute();
+    $stmt->close();
+}
+
+function naver_validate_state($receivedState, $conn = null, $demoMode = false) {
+    if (!is_string($receivedState) || $receivedState === '') {
+        return false;
+    }
+
+    // DB 우선 확인 (서버 무관, LB 멀티서버 대응)
+    if (!$demoMode && $conn) {
+        $stmt = $conn->prepare("SELECT state FROM oauth_states WHERE state = ? AND created_at > NOW() - INTERVAL 10 MINUTE");
+        $stmt->bind_param('s', $receivedState);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $found = $result->num_rows > 0;
+        $stmt->close();
+
+        // 사용한 state는 즉시 1회용으로 폐기
+        $del = $conn->prepare("DELETE FROM oauth_states WHERE state = ?");
+        $del->bind_param('s', $receivedState);
+        $del->execute();
+        $del->close();
+
+        if ($found) {
+            return true;
+        }
+    }
+
+    // DB 연결 불가(DEMO_MODE) 등 폴백: 세션 기반 검증
     $savedState = $_SESSION['naver_oauth_state'] ?? null;
     unset($_SESSION['naver_oauth_state']);
 
-    return is_string($savedState)
-        && is_string($receivedState)
-        && hash_equals($savedState, $receivedState);
+    return is_string($savedState) && hash_equals($savedState, $receivedState);
 }
 
 function naver_issue_token($code, $state) {
