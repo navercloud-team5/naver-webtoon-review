@@ -19,7 +19,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
         </a>
         <div class="header-right">
             <form action="/list.php" method="get" class="header-search">
-                <input type="text" name="q" placeholder="웹툰 제목 검색">
+                <input type="text" name="q" placeholder="웹툰 제목/작가 검색">
                 <button type="submit" aria-label="검색">검색</button>
             </form>
             <?php if ($isLoggedIn): ?>
@@ -47,7 +47,6 @@ $isLoggedIn = isset($_SESSION['user_id']);
     <div class="login-modal__backdrop" data-login-close></div>
     <section class="login-modal__panel" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
         <button type="button" class="login-modal__close" data-login-close aria-label="닫기">&times;</button>
-        <p class="login-modal__eyebrow">WEBTOON REVIEW</p>
         <h2 id="loginModalTitle">로그인하고 리뷰를 남겨보세요.</h2>
         <a href="/naver_login.php" class="naver-login-button">
             <img src="/images/naver_login.png" alt="네이버로 로그인">

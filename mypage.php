@@ -34,29 +34,51 @@ $stmt = $conn->prepare("
 $stmt->bind_param("i", $userId);
 $stmt->execute();
 $myReviews = $stmt->get_result();
+$reviewCount = $myReviews->num_rows;
 ?>
 
-<h1>마이페이지</h1>
-<p>안녕하세요, <strong><?= h($user['nickname'] ?? $_SESSION['nickname']) ?></strong>님</p>
-
-<?php if (!empty($user['profile_image'])): ?>
-    <p><img src="<?= h($user['profile_image']) ?>" alt="프로필 이미지" style="width:72px;height:72px;border-radius:50%;object-fit:cover;"></p>
-<?php endif; ?>
-
-<?php if (!empty($user['email'])): ?>
-    <p>이메일: <?= h($user['email']) ?></p>
-<?php endif; ?>
+<section class="mypage-hero">
+    <div class="mypage-avatar">
+        <?php if (!empty($user['profile_image'])): ?>
+            <img src="<?= h($user['profile_image']) ?>" alt="프로필 이미지">
+        <?php else: ?>
+            <span>N</span>
+        <?php endif; ?>
+    </div>
+    <p class="eyebrow">MY PAGE</p>
+    <h1>마이페이지</h1>
+    <p class="mypage-greeting">안녕하세요, <strong><?= h($user['nickname'] ?? $_SESSION['nickname']) ?></strong>님</p>
+    <div class="mypage-meta">
+        <?php if (!empty($user['email'])): ?>
+            <span><?= h($user['email']) ?></span>
+        <?php endif; ?>
+        <span>작성 리뷰 <?= (int)$reviewCount ?>개</span>
+    </div>
+</section>
 
 <section class="section">
-    <h2>내가 작성한 리뷰 (<?= $myReviews->num_rows ?>)</h2>
-    <div class="review-list">
-        <?php if ($myReviews->num_rows > 0): ?>
+    <h2>내가 작성한 리뷰 (<?= (int)$reviewCount ?>)</h2>
+    <div class="mypage-review-list">
+        <?php if ($reviewCount > 0): ?>
             <?php while ($r = $myReviews->fetch_assoc()): ?>
                 <div class="review-item">
-                    <a href="/detail.php?id=<?= (int)$r['webtoon_id'] ?>"><strong><?= h($r['webtoon_title']) ?></strong></a>
-                    <span class="rating"><?= render_stars((float)$r['rating']) ?> <?= number_format((float)$r['rating'], 1) ?></span>
+                    <div class="mypage-review-head">
+                        <div>
+                            <a href="/detail.php?id=<?= (int)$r['webtoon_id'] ?>"><strong><?= h($r['webtoon_title']) ?></strong></a>
+                            <span class="rating"><?= render_stars((float)$r['rating']) ?> <?= number_format((float)$r['rating'], 1) ?></span>
+                        </div>
+                        <div class="review-actions">
+                            <a href="/detail.php?id=<?= (int)$r['webtoon_id'] ?>#review-form" class="review-text-button">수정</a>
+                            <form action="/detail.php?id=<?= (int)$r['webtoon_id'] ?>" method="post" class="delete-review-form" data-delete-review>
+                                <input type="hidden" name="action" value="delete_review">
+                                <input type="hidden" name="review_id" value="<?= (int)$r['id'] ?>">
+                                <input type="hidden" name="redirect" value="mypage">
+                                <button type="submit" class="review-text-button is-danger">삭제</button>
+                            </form>
+                        </div>
+                    </div>
                     <p><?= nl2br(h($r['content'])) ?></p>
-                    <small><?= h($r['created_at']) ?> · 좋아요 <?= (int)$r['like_count'] ?></small>
+                    <small><?= h($r['created_at']) ?> · <span class="heart-count"><?= heart_svg('heart-icon--filled') ?> <?= (int)$r['like_count'] ?></span></small>
                 </div>
             <?php endwhile; ?>
         <?php else: ?>
@@ -64,6 +86,16 @@ $myReviews = $stmt->get_result();
         <?php endif; ?>
     </div>
 </section>
+
+<script>
+document.querySelectorAll('[data-delete-review]').forEach(function (form) {
+    form.addEventListener('submit', function (event) {
+        if (!confirm('리뷰를 삭제할까요?')) {
+            event.preventDefault();
+        }
+    });
+});
+</script>
 
 <?php
 $stmt->close();

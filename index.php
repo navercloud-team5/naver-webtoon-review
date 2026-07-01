@@ -72,7 +72,6 @@ if ($DEMO_MODE) {
                         </div>
                         <div class="card-meta">
                             <span>리뷰 <?= (int)($w['review_count'] ?? 0) ?></span>
-                            <span class="heart-count">♥ <?= (int)($w['like_count'] ?? 0) ?></span>
                         </div>
                     </div>
                 </a>
@@ -85,7 +84,7 @@ if ($DEMO_MODE) {
 
 <section class="section">
     <h2>최신 리뷰</h2>
-    <div class="review-list">
+    <div class="recent-review-list">
         <?php if (count($recentReviewsList) > 0): ?>
             <?php foreach ($recentReviewsList as $r): ?>
                 <div class="review-item">
