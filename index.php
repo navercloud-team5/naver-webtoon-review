@@ -3,12 +3,10 @@ require_once __DIR__ . '/config/db.php';
 require_once __DIR__ . '/includes/header.php';
 
 if ($DEMO_MODE) {
-    $popularArr = $demoWebtoons;
-    usort($popularArr, fn($a, $b) => $b['avg_rating'] <=> $a['avg_rating']);
-    $popularList = array_slice($popularArr, 0, 6);
+    $webtoonList = $demoWebtoons;
     $recentReviewsList = array_slice(array_reverse($demoReviews), 0, 5);
 } else {
-    $popular = $conn->query("
+    $webtoons = $conn->query("
         SELECT
             w.*,
             COALESCE(rs.avg_rating, 0) AS avg_rating,
@@ -27,7 +25,6 @@ if ($DEMO_MODE) {
             GROUP BY r.webtoon_id
         ) ls ON ls.webtoon_id = w.id
         ORDER BY avg_rating DESC, review_count DESC, like_count DESC, w.title ASC
-        LIMIT 6
     ");
 
     $recentReviews = $conn->query("
@@ -39,7 +36,7 @@ if ($DEMO_MODE) {
         LIMIT 5
     ");
 
-    $popularList = $popular ? $popular->fetch_all(MYSQLI_ASSOC) : [];
+    $webtoonList = $webtoons ? $webtoons->fetch_all(MYSQLI_ASSOC) : [];
     $recentReviewsList = $recentReviews ? $recentReviews->fetch_all(MYSQLI_ASSOC) : [];
 }
 ?>
@@ -54,10 +51,10 @@ if ($DEMO_MODE) {
 </section>
 
 <section class="section">
-    <h2>인기 웹툰</h2>
+    <h2>전체 웹툰</h2>
     <div class="card-grid">
-        <?php if (count($popularList) > 0): ?>
-            <?php foreach ($popularList as $w): ?>
+        <?php if (count($webtoonList) > 0): ?>
+            <?php foreach ($webtoonList as $w): ?>
                 <a href="/detail.php?id=<?= (int)$w['id'] ?>" class="webtoon-card">
                     <div class="card-thumb">
                         <img src="<?= h($w['thumbnail_url']) ?>" alt="<?= h($w['title']) ?>" onerror="this.src='/images/placeholder.svg'">

@@ -35,6 +35,19 @@ $stmt->bind_param("i", $userId);
 $stmt->execute();
 $myReviews = $stmt->get_result();
 $reviewCount = $myReviews->num_rows;
+
+// 현재 요청을 처리한 서버 정보 (로드밸런서 분산 확인용)
+// 새로고침할 때마다 Host/IP 가 바뀌면 트래픽이 여러 서버로 분산되고 있는 것.
+$serverHostname = php_uname('n');
+// 이 요청을 실제로 처리한 웹 서버(백엔드)의 사설 IP
+$serverInternalIp = $_SERVER['SERVER_ADDR'] ?? gethostbyname($serverHostname);
+// 로드밸런서를 통해 들어온 클라이언트 IP (X-Forwarded-For 우선)
+if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+    $forwarded = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+    $clientIp = trim($forwarded[0]);
+} else {
+    $clientIp = $_SERVER['REMOTE_ADDR'] ?? '-';
+}
 ?>
 
 <section class="mypage-hero">
@@ -53,6 +66,13 @@ $reviewCount = $myReviews->num_rows;
             <span><?= h($user['email']) ?></span>
         <?php endif; ?>
         <span>작성 리뷰 <?= (int)$reviewCount ?>개</span>
+    </div>
+    <div class="server-info">
+        <p class="server-info__title">🔀 이 요청을 처리한 서버</p>
+        <p class="server-info__line">Server: <strong><?= h($serverHostname) ?></strong></p>
+        <p class="server-info__line">Internal IP: <strong><?= h($serverInternalIp) ?></strong></p>
+        <p class="server-info__line">Client IP: <strong><?= h($clientIp) ?></strong></p>
+        <p class="server-info__hint">새로고침 시 Host/IP 가 바뀌면 로드밸런서가 트래픽을 분산하는 중입니다.</p>
     </div>
 </section>
 

@@ -586,11 +586,56 @@ button, input, select, textarea { font: inherit; }
     font-weight: 800;
 }
 
+.server-info {
+    margin-top: 20px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    background: var(--green-soft);
+    color: var(--green);
+    text-align: left;
+}
+
+.server-info__title {
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.server-info__line {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.7;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.server-info__line strong {
+    font-weight: 900;
+}
+
+.server-info__hint {
+    margin-top: 8px;
+    color: #6b7280;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
 .mypage-review-list {
     display: flex;
     flex-direction: column;
-    border-top: 1px solid var(--line);
+    gap: 14px;
 }
+
+.mypage-review-list .review-item {
+    padding: 20px 22px;
+    border: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(17, 24, 39, 0.04);
+}
+
+.mypage-review-list .review-item:first-child { padding-top: 20px; }
 
 .mypage-review-head {
     display: flex;
